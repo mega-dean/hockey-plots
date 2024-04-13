@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs};
 
 use eframe::egui;
-use egui::RichText;
+use egui::{Color32, RichText};
 use egui_plot::{Legend, Line, PlotPoint, PlotPoints};
 
 fn main() -> Result<(), eframe::Error> {
@@ -10,7 +10,11 @@ fn main() -> Result<(), eframe::Error> {
     viewport: egui::ViewportBuilder::default().with_inner_size([1280.0, 960.0]),
     ..Default::default()
   };
-  eframe::run_native("hockey plots", options, Box::new(|_cc| Box::<App>::default()))
+  eframe::run_native(
+    "hockey plots",
+    options,
+    Box::new(|_cc| Box::<App>::default()),
+  )
 }
 
 mod full_json {
@@ -52,54 +56,93 @@ mod full_json {
   }
 }
 
-struct App {
-  games: HashMap<i32, Vec<full_json::Game>>,
-  average_points_per_game: f32,
+#[derive(Copy, Clone)]
+struct ShowDivision {
+  central: bool,
+  pacific: bool,
+  atlantic: bool,
+  metro: bool,
 }
 
-fn ids_by_team_abbrev() -> HashMap<String, i32> {
-  HashMap::from([
-    (String::from("EDM"), 22),
-    (String::from("WPG"), 52),
-    (String::from("VAN"), 23),
-    (String::from("CGY"), 20),
-    (String::from("SEA"), 55),
-    (String::from("NSH"), 18),
-    (String::from("PHI"), 4),
-    (String::from("MIN"), 30),
-    (String::from("NYR"), 3),
-    (String::from("DAL"), 25),
-    (String::from("SJS"), 28),
-    (String::from("NYI"), 2),
-    (String::from("TBL"), 14),
-    (String::from("FLA"), 13),
-    (String::from("CAR"), 12),
-    (String::from("WSH"), 15),
-    (String::from("ANA"), 24),
-    (String::from("VGK"), 54),
-    (String::from("NJD"), 1),
-    (String::from("CHI"), 16),
-    (String::from("LAK"), 26),
-    (String::from("OTT"), 9),
-    (String::from("DET"), 17),
-    (String::from("MTL"), 8),
-    (String::from("TOR"), 10),
-    (String::from("CBJ"), 29),
-    (String::from("STL"), 19),
-    (String::from("ARI"), 53),
-    (String::from("BOS"), 6),
-    (String::from("PIT"), 5),
-    (String::from("BUF"), 7),
-    (String::from("COL"), 21),
-  ])
+struct App {
+  games: HashMap<i32, Vec<full_json::Game>>,
+  show: ShowDivision,
+}
+
+enum Division {
+  Central,
+  Pacific,
+  Atlantic,
+  Metropolitan,
+}
+
+struct Team {
+  id: i32,
+  color: Color32,
+  abbrev: String,
+  division: Division,
+}
+
+impl Team {
+  fn new(id: i32, abbrev: &str, (r, g, b): (u8, u8, u8), division: Division) -> Self {
+    Self {
+      id,
+      color: Color32::from_rgb(r, g, b),
+      abbrev: String::from(abbrev),
+      division,
+    }
+  }
+}
+
+// TODO Some of these colors are too dark.
+fn all_teams() -> Vec<Team> {
+  vec![
+    // Western
+    Team::new(24, "ANA", (252, 76, 2), Division::Pacific),
+    Team::new(20, "CGY", (210, 0, 28), Division::Pacific),
+    Team::new(22, "EDM", (4, 30, 66), Division::Pacific),
+    Team::new(26, "LAK", (162, 170, 173), Division::Pacific),
+    Team::new(55, "SEA", (104, 162, 185), Division::Pacific),
+    Team::new(28, "SJS", (0, 109, 117), Division::Pacific),
+    Team::new(23, "VAN", (0, 32, 91), Division::Pacific),
+    Team::new(54, "VGK", (185, 151, 91), Division::Pacific),
+    Team::new(53, "ARI", (140, 38, 51), Division::Central),
+    Team::new(16, "CHI", (207, 10, 44), Division::Central),
+    Team::new(21, "COL", (111, 38, 61), Division::Central),
+    Team::new(25, "DAL", (0, 104, 71), Division::Central),
+    Team::new(30, "MIN", (2, 73, 48), Division::Central),
+    Team::new(18, "NSH", (255, 184, 28), Division::Central),
+    Team::new(19, "STL", (0, 47, 135), Division::Central),
+    Team::new(52, "WPG", (4, 30, 66), Division::Central),
+    // Eastern
+    Team::new(6, "BOS", (252, 181, 20), Division::Atlantic),
+    Team::new(7, "BUF", (0, 48, 135), Division::Atlantic),
+    Team::new(17, "DET", (206, 17, 38), Division::Atlantic),
+    Team::new(13, "FLA", (185, 151, 91), Division::Atlantic),
+    Team::new(8, "MTL", (175, 30, 45), Division::Atlantic),
+    Team::new(9, "OTT", (183, 146, 87), Division::Atlantic),
+    Team::new(14, "TBL", (0, 40, 104), Division::Atlantic),
+    Team::new(10, "TOR", (0, 32, 91), Division::Atlantic),
+    Team::new(12, "CAR", (206, 17, 38), Division::Metropolitan),
+    Team::new(29, "CBJ", (0, 38, 84), Division::Metropolitan),
+    Team::new(1, "NJD", (206, 17, 38), Division::Metropolitan),
+    Team::new(2, "NYI", (0, 83, 155), Division::Metropolitan),
+    Team::new(3, "NYR", (0, 56, 168), Division::Metropolitan),
+    Team::new(4, "PHI", (247, 73, 2), Division::Metropolitan),
+    Team::new(5, "PIT", (252, 181, 20), Division::Metropolitan),
+    Team::new(15, "WSH", (200, 16, 46), Division::Metropolitan),
+  ]
+}
+
+fn find_team(id: i32) -> Option<Team> {
+  all_teams().into_iter().find(|team| team.id == id)
 }
 
 impl Default for App {
   fn default() -> Self {
-    let ids = ids_by_team_abbrev();
     let mut games = HashMap::new();
-    for (abbrev, id) in ids {
-      let json_contents = fs::read_to_string(format!("../data/{abbrev}.json")).unwrap();
+    for team in all_teams() {
+      let json_contents = fs::read_to_string(format!("../data/{}.json", team.abbrev)).unwrap();
       let parsed: full_json::TeamSchedule = serde_json::from_str(&json_contents).unwrap();
       let mut team_games = vec![];
       for game in parsed.games.iter() {
@@ -107,11 +150,16 @@ impl Default for App {
           team_games.push(*game)
         }
       }
-      games.insert(id, team_games);
+      games.insert(team.id, team_games);
     }
     Self {
       games,
-      average_points_per_game: 1.0,
+      show: ShowDivision {
+        central: true,
+        pacific: true,
+        atlantic: true,
+        metro: true,
+      },
     }
   }
 }
@@ -123,58 +171,60 @@ fn _txt(s: &str) -> egui::widget_text::RichText {
 impl eframe::App for App {
   fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
     egui::SidePanel::left("options").show(ctx, |ui| {
-      ui.add(egui::Slider::new(&mut self.average_points_per_game, 0.0..=2.0).text("ppg"))
+      ui.checkbox(&mut self.show.metro, "Metro");
+      ui.checkbox(&mut self.show.pacific, "Pacific");
+      ui.checkbox(&mut self.show.atlantic, "Atlantic");
+      ui.checkbox(&mut self.show.central, "Central");
     });
     egui::CentralPanel::default().show(ctx, |ui| {
       egui_plot::Plot::new("plot")
         .legend(Legend::default().text_style(egui::TextStyle::Heading))
         .show(ui, |plot_ui| {
-          fn get_abbrev(team_id: i32) -> Option<String> {
-            for (abbrev, id) in ids_by_team_abbrev() {
-              if id == team_id {
-                return Some(abbrev);
-              }
+          fn show_team(show: ShowDivision, team: &Team) -> bool {
+            match team.division {
+              Division::Metropolitan => show.metro,
+              Division::Central => show.central,
+              Division::Pacific => show.pacific,
+              Division::Atlantic => show.atlantic,
             }
-
-            None
           }
-
           for (team_id, games_) in &self.games {
-            let mut games: Vec<PlotPoint> = vec![];
-            let mut points_so_far = 0.0;
+            let team: Team = find_team(*team_id).unwrap();
+            if show_team(self.show, &team) {
+              let mut games: Vec<PlotPoint> = vec![];
+              let mut points_so_far = 0.0;
 
-            games.push(PlotPoint { x: 0.0, y: 0.0 });
+              games.push(PlotPoint { x: 0.0, y: 0.0 });
 
-            for (idx, game) in games_.iter().enumerate() {
-              let (edm, opponent) = if game.home_team.id == *team_id {
-                (game.home_team, game.away_team)
-              } else {
-                (game.away_team, game.home_team)
-              };
-              fn points_for_loss(outcome: full_json::GameOutcome) -> f32 {
-                match outcome.last_period_type {
-                  full_json::PeriodType::SO | full_json::PeriodType::OT => 1.0,
-                  full_json::PeriodType::REG => 0.0,
+              for (idx, game) in games_.iter().enumerate() {
+                let (edm, opponent) = if game.home_team.id == *team_id {
+                  (game.home_team, game.away_team)
+                } else {
+                  (game.away_team, game.home_team)
+                };
+                fn points_for_loss(outcome: full_json::GameOutcome) -> f32 {
+                  match outcome.last_period_type {
+                    full_json::PeriodType::SO | full_json::PeriodType::OT => 1.0,
+                    full_json::PeriodType::REG => 0.0,
+                  }
+                }
+                if let Some(outcome) = game.game_outcome {
+                  let points = if edm.score > opponent.score {
+                    2.0
+                  } else {
+                    points_for_loss(outcome)
+                  };
+                  points_so_far += points - 1.0;
+                  games.push(PlotPoint {
+                    x: (1 + idx) as f64,
+                    y: points_so_far as f64,
+                  })
                 }
               }
-              if let Some(outcome) = game.game_outcome {
-                let points = if edm.score > opponent.score {
-                  2.0
-                } else {
-                  points_for_loss(outcome)
-                };
-                points_so_far += points - self.average_points_per_game;
-                games.push(PlotPoint {
-                  x: (1 + idx) as f64,
-                  y: points_so_far as f64,
-                })
-              }
+
+              let game_points = PlotPoints::Owned(games.clone());
+              plot_ui.line(Line::new(game_points).name(team.abbrev).color(team.color));
             }
-            let game_points = PlotPoints::Owned(games.clone());
-
-            let team_abbrev = get_abbrev(*team_id).unwrap();
-
-            plot_ui.line(Line::new(game_points).name(team_abbrev));
           }
         });
 
