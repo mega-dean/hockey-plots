@@ -64,13 +64,13 @@ mod db {
         let db_division = db_divisions
           .iter()
           .find(|db_division| db_division.id == id)
-          .unwrap();
+          .unwrap_or_else(|| panic!("could not find division with id: {id}"));
         match db_division.name.as_str() {
           "Metropolitan" => crate::Division::Metropolitan,
           "Pacific" => crate::Division::Pacific,
           "Atlantic" => crate::Division::Atlantic,
           "Central" => crate::Division::Central,
-          _ => panic!("no!"),
+          _ => panic!("Found division with invalid name: {}", db_division.name),
         }
       }
 
@@ -119,8 +119,7 @@ mod db {
           Some(match last_period_type.name.as_str() {
             "Regulation" => 0.0,
             "Overtime" | "Shootout" => 1.0,
-            // CLEANUP
-            _ => panic!("aaahhhh"),
+            other => panic!("found unknown last_period_type in db: '{other}'"),
           })
         }
       } else {
@@ -179,8 +178,8 @@ mod json {
       self.game_type == 1
     }
 
-    // CLEANUP consolidate with db::to_game
-    pub fn to_game(self, this_team: &crate::Team) -> crate::Game {
+    // TODO Consolidate with db::db_to_crate.
+    pub fn api_to_crate(self, this_team: &crate::Team) -> crate::Game {
       let points = if let Some(outcome) = self.game_outcome {
         let (this_team_score, opponent_score) = if self.home_team.id == this_team.api_id {
           (self.home_team.score, self.away_team.score)
@@ -221,13 +220,11 @@ mod json {
 
   pub mod api {
     use crate::*;
-    // CLEANUP consolidate with db.all_games()
     pub async fn load_games(teams: Vec<Team>) -> Result<json::ApiResponse, request::Error> {
       let mut api_response = json::ApiResponse {
         schedules: std::collections::HashMap::new(),
       };
       for team in teams {
-        // CLEANUP thread pool
         let json_contents = request::get(format!(
           "https://api-web.nhle.com/v1/club-schedule-season/{}/20232024",
           team.abbrev
@@ -235,7 +232,7 @@ mod json {
         .await?
         .text()
         .await?;
-        let schedule: json::TeamSchedule = serde_json::from_str(&json_contents).unwrap();
+        let schedule: json::TeamSchedule = serde_json::from_str(&json_contents).expect("no");
         api_response.schedules.insert(team.api_id, schedule);
       }
       Ok(api_response)
@@ -251,43 +248,32 @@ struct DB {
 use std::path::Path;
 
 impl DB {
-  // CLEANUP consolidate these with generics
-  fn all_scores(&self) -> Vec<db::Score> {
-    let mut statement = self.conn.prepare("SELECT * FROM scores;").unwrap();
-    let res = serde_rusqlite::from_rows::<db::Score>(statement.query([]).unwrap());
+  fn all<T: for<'a> serde::Deserialize<'a>>(&self, table_name: &str) -> Vec<T> {
+    // TODO Not sure why this can't use rusqlite's `?1` params - getting SqlInputError with `code: Unknown`.
+    let mut statement = self
+      .conn
+      .prepare(&format!("SELECT * FROM {};", table_name))
+      .unwrap_or_else(|_| panic!("error from DB::all for table {table_name}"));
+    let res = serde_rusqlite::from_rows::<T>(statement.query([]).unwrap());
     res.flatten().collect()
+  }
+
+  fn all_scores(&self) -> Vec<db::Score> {
+    self.all::<db::Score>("scores")
   }
 
   fn all_divisions(&self) -> Vec<db::Division> {
-    let mut statement = self.conn.prepare("SELECT * FROM divisions;").unwrap();
-    let res = serde_rusqlite::from_rows::<db::Division>(statement.query([]).unwrap());
-    res.flatten().collect()
+    self.all::<db::Division>("divisions")
   }
 
   fn all_last_period_types(&self) -> Vec<db::LastPeriodType> {
-    let mut statement = self
-      .conn
-      .prepare("SELECT * FROM last_period_types;")
-      .unwrap();
-    let res = serde_rusqlite::from_rows::<db::LastPeriodType>(statement.query([]).unwrap());
-    res.flatten().collect()
+    self.all::<db::LastPeriodType>("last_period_types")
   }
 
   fn all_teams(&self) -> Vec<db::Team> {
-    let mut divisions_statement = self.conn.prepare("SELECT * FROM divisions;").unwrap();
-    let res = serde_rusqlite::from_rows::<db::Division>(divisions_statement.query([]).unwrap());
-    let mut db_divisions: Vec<db::Division> = vec![];
-
-    for db_division in res.flatten() {
-      db_divisions.push(db_division)
-    }
-
-    let mut statement = self.conn.prepare("SELECT * FROM teams;").unwrap();
-    let res = serde_rusqlite::from_rows::<db::Team>(statement.query([]).unwrap());
-    res.flatten().collect()
+    self.all::<db::Team>("teams")
   }
 
-  // CLEANUP maybe rename to something like games_for_teams since teams arg isn't necessarily all_teams()
   fn all_games(&self, teams: &[Team]) -> GamesByTeam {
     let mut games: GamesByTeam = HashMap::new();
     let scores = self.all_scores();
@@ -295,18 +281,15 @@ impl DB {
 
     for team in teams {
       let mut team_games = vec![];
-      // CLEANUP use rusqlite's built-in query params
       let mut statement = self
         .conn
-        .prepare(
-          format!(
-            "SELECT * FROM games WHERE games.home_team_id = {} OR games.away_team_id = {};",
-            team.db_id, team.db_id
-          )
-          .as_str(),
-        )
+        .prepare("SELECT * FROM games WHERE games.home_team_id = ?1 OR games.away_team_id = ?2;")
         .unwrap();
-      let res = serde_rusqlite::from_rows::<db::Game>(statement.query([]).unwrap());
+      let res = serde_rusqlite::from_rows::<db::Game>(
+        statement
+          .query([team.db_id, team.db_id])
+          .unwrap_or_else(|e| panic!("error while SELECTing games: {:?}", e)),
+      );
       fn find_score(
         score_id: i32,
         scores: &[db::Score],
@@ -341,18 +324,21 @@ impl DB {
   fn execute_file(&self, path: &str) {
     use std::io::Read;
 
-    let mut f = std::fs::File::open(path).unwrap();
+    let mut f = std::fs::File::open(path)
+      .unwrap_or_else(|_| panic!("could not find sql file at path: {path}"));
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).unwrap().to_string();
 
-    // CLEANUP handle error
-    let _ = self.conn.execute_batch(&buffer);
+    match self.conn.execute_batch(&buffer) {
+      Ok(_) => println!("initialized db"),
+      Err(_) => println!("db initialization skipped"),
+    };
   }
 
   pub fn initialize(db_path: &Path) -> Self {
-    let conn = rusqlite::Connection::open(db_path).unwrap();
+    let conn = rusqlite::Connection::open(db_path)
+      .unwrap_or_else(|_| panic!("could not find db file at path: {:?}", db_path));
     let db = Self { conn };
-    println!("initializing db...");
     db.execute_file("../data/init.sql");
     db
   }
@@ -404,7 +390,6 @@ struct Game {
 struct AppData {
   games: GamesByTeam,
   teams: Vec<Team>,
-  // api_response: Option<json::ApiResponse>,
 }
 
 #[derive(Debug)]
@@ -447,25 +432,6 @@ fn _txt(s: &str) -> egui::widget_text::RichText {
 
 impl eframe::App for App {
   fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-    egui::SidePanel::left("options").show(ctx, |ui| {
-      ui.checkbox(&mut self.show.metro, "Metro");
-      ui.checkbox(&mut self.show.pacific, "Pacific");
-      ui.checkbox(&mut self.show.atlantic, "Atlantic");
-      ui.checkbox(&mut self.show.central, "Central");
-
-      if ui.button("update").clicked() {
-        let tx: std::sync::mpsc::Sender<json::ApiResponse> = self.tx.clone();
-        let ctx_ = ctx.clone();
-
-        let teams = self.db.get_teams();
-        tokio::spawn(async move {
-          let api_response = json::api::load_games(teams).await.unwrap();
-          let _ = tx.send(api_response);
-          ctx_.request_repaint();
-        });
-      }
-    });
-
     fn make_app_data(api_response: &json::ApiResponse, teams: &[Team]) -> AppData {
       let mut games: GamesByTeam = HashMap::new();
       for (team_api_id, schedule) in &api_response.schedules {
@@ -477,7 +443,7 @@ impl eframe::App for App {
 
         for game in &schedule.games {
           if !game.is_preseason() {
-            team_games.push(game.to_game(team));
+            team_games.push(game.api_to_crate(team));
           }
         }
         games.insert(team.api_id, team_games);
@@ -495,12 +461,12 @@ impl eframe::App for App {
       let mut game_statement = self
         .db
         .conn
-        .prepare("INSERT INTO games (api_id, home_team_id, away_team_id, score_id) VALUES (?1, ?2, ?3, ?4);")
+        .prepare("INSERT INTO games (api_id, home_team_id, away_team_id, score_id) VALUES (:api_id, :home_team_id, :away_team_id, :score_id);")
         .unwrap();
       let mut score_statement = self
         .db
         .conn
-        .prepare("INSERT INTO scores (home, away, last_period_type_id) VALUES (?1, ?2, ?3);")
+        .prepare("INSERT INTO scores (home, away, last_period_type_id) VALUES (:home, :away, :last_period_type_id);")
         .unwrap();
       fn get_period_type_id(db: &DB, name: &str) -> i32 {
         db.conn
@@ -512,9 +478,18 @@ impl eframe::App for App {
           .unwrap()
       }
       let mut period_type_ids: HashMap<json::PeriodType, i32> = HashMap::new();
-      period_type_ids.insert(json::PeriodType::REG, get_period_type_id(&self.db, "Regulation"));
-      period_type_ids.insert(json::PeriodType::SO, get_period_type_id(&self.db, "Shootout"));
-      period_type_ids.insert(json::PeriodType::OT, get_period_type_id(&self.db, "Overtime"));
+      period_type_ids.insert(
+        json::PeriodType::REG,
+        get_period_type_id(&self.db, "Regulation"),
+      );
+      period_type_ids.insert(
+        json::PeriodType::SO,
+        get_period_type_id(&self.db, "Shootout"),
+      );
+      period_type_ids.insert(
+        json::PeriodType::OT,
+        get_period_type_id(&self.db, "Overtime"),
+      );
       let mut game_ids: HashSet<i32> = HashSet::new();
       for (_team_api_id, schedule) in api_response.schedules {
         for json_game in schedule.games {
@@ -528,13 +503,12 @@ impl eframe::App for App {
                 })
               }
               score_id = Some(
-                // CLEANUP use named parameters
                 score_statement
-                  .insert([
-                    get_score(json_game.home_team, "home"),
-                    get_score(json_game.away_team, "away"),
-                    *period_type_ids.get(&outcome.last_period_type).unwrap(),
-                  ])
+                  .insert(rusqlite::named_params! {
+                    ":home": get_score(json_game.home_team, "home"),
+                    ":away": get_score(json_game.away_team, "away"),
+                    ":last_period_type_id": *period_type_ids.get(&outcome.last_period_type).unwrap(),
+                  })
                   .unwrap(),
               );
             }
@@ -549,13 +523,12 @@ impl eframe::App for App {
               .db_id
           }
           if !json_game.is_preseason() {
-            // CLEANUP use named parameters
-            match game_statement.execute((
-              json_game.id,
-              get_db_id(json_game.home_team, &self.data.teams),
-              get_db_id(json_game.away_team, &self.data.teams),
-              score_id,
-            )) {
+            match game_statement.execute(rusqlite::named_params! {
+              ":api_id": json_game.id,
+              ":home_team_id": get_db_id(json_game.home_team, &self.data.teams),
+              ":away_team_id": get_db_id(json_game.away_team, &self.data.teams),
+              ":score_id": score_id,
+            }) {
               Ok(_) => (),
               Err(e) => {
                 println!(
@@ -568,6 +541,31 @@ impl eframe::App for App {
         }
       }
     }
+
+    egui::SidePanel::left("options").show(ctx, |ui| {
+      ui.collapsing("Divisions", |cui| {
+        cui.checkbox(&mut self.show.metro, "Metro");
+        cui.checkbox(&mut self.show.pacific, "Pacific");
+        cui.checkbox(&mut self.show.atlantic, "Atlantic");
+        cui.checkbox(&mut self.show.central, "Central");
+      });
+
+      if ui.button("update").clicked() {
+        let tx: std::sync::mpsc::Sender<json::ApiResponse> = self.tx.clone();
+        let ctx_ = ctx.clone();
+
+        let teams = self.db.get_teams();
+        tokio::spawn(async move {
+          match json::api::load_games(teams).await {
+            Ok(api_response) => {
+              let _ = tx.send(api_response);
+              ctx_.request_repaint();
+            },
+            Err(e) => println!("error from NHL api: {:?}", e),
+          }
+        });
+      }
+    });
 
     egui::CentralPanel::default().show(ctx, |ui| {
       egui_plot::Plot::new("plot")
