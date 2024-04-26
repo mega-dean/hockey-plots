@@ -1,15 +1,32 @@
-use std::{collections::HashMap, fs};
+use std::collections::{HashMap, HashSet};
 
 use eframe::egui;
 use egui::{Color32, RichText};
 use egui_plot::{Legend, Line, PlotPoint, PlotPoints};
 
+use reqwest as request;
+
 fn main() -> Result<(), eframe::Error> {
   env_logger::init();
+
   let options = eframe::NativeOptions {
     viewport: egui::ViewportBuilder::default().with_inner_size([1280.0, 960.0]),
     ..Default::default()
   };
+
+  let rt = tokio::runtime::Runtime::new().expect("tokio Runtime::new() failure");
+
+  let _enter = rt.enter();
+
+  // CLEANUP not sure if this is necessary
+  std::thread::spawn(move || {
+    rt.block_on(async {
+      loop {
+        tokio::time::sleep(std::time::Duration::from_secs(3600)).await;
+      }
+    })
+  });
+
   eframe::run_native(
     "hockey plots",
     options,
@@ -17,16 +34,114 @@ fn main() -> Result<(), eframe::Error> {
   )
 }
 
-mod full_json {
-  use serde::Deserialize;
-
-  #[derive(Deserialize, Copy, Clone)]
-  pub struct GameTeam {
+mod db {
+  #[derive(Clone, Debug, serde::Deserialize)]
+  pub struct Division {
     pub id: i32,
-    pub score: Option<i8>,
+    pub name: String,
   }
 
-  #[derive(Deserialize, Copy, Clone)]
+  #[derive(Clone, Debug, serde::Deserialize)]
+  pub struct LastPeriodType {
+    pub id: i32,
+    pub name: String,
+  }
+
+  #[derive(Clone, Debug, serde::Deserialize)]
+  pub struct Team {
+    pub id: i32,
+    pub api_id: i32,
+    pub r: i32,
+    pub g: i32,
+    pub b: i32,
+    pub abbrev: String,
+    pub division_id: i32,
+  }
+
+  impl Team {
+    pub fn db_to_crate(self, db_divisions: &[Division]) -> crate::Team {
+      fn find_division(id: i32, db_divisions: &[Division]) -> crate::Division {
+        let db_division = db_divisions
+          .iter()
+          .find(|db_division| db_division.id == id)
+          .unwrap();
+        match db_division.name.as_str() {
+          "Metropolitan" => crate::Division::Metropolitan,
+          "Pacific" => crate::Division::Pacific,
+          "Atlantic" => crate::Division::Atlantic,
+          "Central" => crate::Division::Central,
+          _ => panic!("no!"),
+        }
+      }
+
+      crate::Team {
+        db_id: self.id,
+        api_id: self.api_id,
+        color: egui::Color32::from_rgb(self.r as u8, self.g as u8, self.b as u8),
+        abbrev: self.abbrev,
+        division: find_division(self.division_id, db_divisions),
+      }
+    }
+  }
+
+  #[derive(Copy, Clone, Debug, serde::Deserialize)]
+  pub struct Score {
+    pub id: i32,
+    pub home: i32,
+    pub away: i32,
+    pub last_period_type_id: i32,
+  }
+
+  #[derive(Clone, Debug, serde::Deserialize)]
+  pub struct Game {
+    pub api_id: i32,
+    pub home_team_id: i32,
+    pub away_team_id: i32,
+    pub score_id: Option<i32>,
+  }
+
+  impl Game {
+    pub fn db_to_crate(
+      self: Game,
+      game_outcome: Option<(Score, LastPeriodType)>,
+      this_team: &crate::Team,
+    ) -> crate::Game {
+      let points = if let Some((score, last_period_type)) = game_outcome {
+        let (this_team_score, opponent_score) = if self.home_team_id == this_team.db_id {
+          (score.home, score.away)
+        } else {
+          (score.away, score.home)
+        };
+
+        if this_team_score > opponent_score {
+          Some(2.0)
+        } else {
+          Some(match last_period_type.name.as_str() {
+            "Regulation" => 0.0,
+            "Overtime" | "Shootout" => 1.0,
+            // CLEANUP
+            _ => panic!("aaahhhh"),
+          })
+        }
+      } else {
+        None
+      };
+
+      crate::Game { points }
+    }
+  }
+}
+
+mod json {
+  use serde::Deserialize;
+
+  #[derive(Debug, Deserialize, Copy, Clone)]
+  pub struct GameTeam {
+    pub id: i32,
+    pub score: Option<i32>,
+  }
+
+  #[derive(Debug, Deserialize, Copy, Clone, PartialEq, Eq, Hash)]
   #[allow(clippy::upper_case_acronyms)]
   pub enum PeriodType {
     SO,
@@ -34,13 +149,21 @@ mod full_json {
     OT,
   }
 
-  #[derive(Deserialize, Copy, Clone)]
+  #[derive(Debug, Deserialize, Copy, Clone, PartialEq)]
+  #[allow(clippy::upper_case_acronyms)]
+  pub enum GameState {
+    FINAL, // preseason
+    OFF,   // regular season
+    FUT,   // regular season, future
+  }
+
+  #[derive(Debug, Deserialize, Copy, Clone)]
   #[serde(rename_all = "camelCase")]
   pub struct GameOutcome {
     pub last_period_type: PeriodType,
   }
 
-  #[derive(Deserialize, Copy, Clone)]
+  #[derive(Debug, Deserialize, Copy, Clone)]
   #[serde(rename_all = "camelCase")]
   pub struct Game {
     pub id: i32,
@@ -48,15 +171,203 @@ mod full_json {
     pub away_team: GameTeam,
     pub game_type: u8,
     pub game_outcome: Option<GameOutcome>,
+    pub game_state: GameState,
   }
 
-  #[derive(Deserialize)]
+  impl Game {
+    pub fn is_preseason(self) -> bool {
+      self.game_type == 1
+    }
+
+    // CLEANUP consolidate with db::to_game
+    pub fn to_game(self, this_team: &crate::Team) -> crate::Game {
+      let points = if let Some(outcome) = self.game_outcome {
+        let (this_team_score, opponent_score) = if self.home_team.id == this_team.api_id {
+          (self.home_team.score, self.away_team.score)
+        } else {
+          (self.away_team.score, self.home_team.score)
+        };
+
+        if this_team_score.is_some() {
+          if this_team_score > opponent_score {
+            Some(2.0)
+          } else {
+            match outcome.last_period_type {
+              PeriodType::REG => Some(0.0),
+              PeriodType::OT | PeriodType::SO => Some(1.0),
+            }
+          }
+        } else {
+          None
+        }
+      } else {
+        None
+      };
+
+      crate::Game { points }
+    }
+  }
+
+  #[derive(Clone, Debug, Deserialize)]
   pub struct TeamSchedule {
     pub games: Vec<Game>,
   }
+
+  #[derive(Clone, Debug, Deserialize)]
+  pub struct ApiResponse {
+    // Key is team.api_id.
+    pub schedules: std::collections::HashMap<i32, TeamSchedule>,
+  }
+
+  pub mod api {
+    use crate::*;
+    // CLEANUP consolidate with db.all_games()
+    pub async fn load_games(teams: Vec<Team>) -> Result<json::ApiResponse, request::Error> {
+      let mut api_response = json::ApiResponse {
+        schedules: std::collections::HashMap::new(),
+      };
+      for team in teams {
+        // CLEANUP thread pool
+        let json_contents = request::get(format!(
+          "https://api-web.nhle.com/v1/club-schedule-season/{}/20232024",
+          team.abbrev
+        ))
+        .await?
+        .text()
+        .await?;
+        let schedule: json::TeamSchedule = serde_json::from_str(&json_contents).unwrap();
+        api_response.schedules.insert(team.api_id, schedule);
+      }
+      Ok(api_response)
+    }
+  }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug)]
+struct DB {
+  conn: rusqlite::Connection,
+}
+
+use std::path::Path;
+
+impl DB {
+  // CLEANUP consolidate these with generics
+  fn all_scores(&self) -> Vec<db::Score> {
+    let mut statement = self.conn.prepare("SELECT * FROM scores;").unwrap();
+    let res = serde_rusqlite::from_rows::<db::Score>(statement.query([]).unwrap());
+    res.flatten().collect()
+  }
+
+  fn all_divisions(&self) -> Vec<db::Division> {
+    let mut statement = self.conn.prepare("SELECT * FROM divisions;").unwrap();
+    let res = serde_rusqlite::from_rows::<db::Division>(statement.query([]).unwrap());
+    res.flatten().collect()
+  }
+
+  fn all_last_period_types(&self) -> Vec<db::LastPeriodType> {
+    let mut statement = self
+      .conn
+      .prepare("SELECT * FROM last_period_types;")
+      .unwrap();
+    let res = serde_rusqlite::from_rows::<db::LastPeriodType>(statement.query([]).unwrap());
+    res.flatten().collect()
+  }
+
+  fn all_teams(&self) -> Vec<db::Team> {
+    let mut divisions_statement = self.conn.prepare("SELECT * FROM divisions;").unwrap();
+    let res = serde_rusqlite::from_rows::<db::Division>(divisions_statement.query([]).unwrap());
+    let mut db_divisions: Vec<db::Division> = vec![];
+
+    for db_division in res.flatten() {
+      db_divisions.push(db_division)
+    }
+
+    let mut statement = self.conn.prepare("SELECT * FROM teams;").unwrap();
+    let res = serde_rusqlite::from_rows::<db::Team>(statement.query([]).unwrap());
+    res.flatten().collect()
+  }
+
+  // CLEANUP maybe rename to something like games_for_teams since teams arg isn't necessarily all_teams()
+  fn all_games(&self, teams: &[Team]) -> GamesByTeam {
+    let mut games: GamesByTeam = HashMap::new();
+    let scores = self.all_scores();
+    let last_period_types = self.all_last_period_types();
+
+    for team in teams {
+      let mut team_games = vec![];
+      // CLEANUP use rusqlite's built-in query params
+      let mut statement = self
+        .conn
+        .prepare(
+          format!(
+            "SELECT * FROM games WHERE games.home_team_id = {} OR games.away_team_id = {};",
+            team.db_id, team.db_id
+          )
+          .as_str(),
+        )
+        .unwrap();
+      let res = serde_rusqlite::from_rows::<db::Game>(statement.query([]).unwrap());
+      fn find_score(
+        score_id: i32,
+        scores: &[db::Score],
+        last_period_types: &[db::LastPeriodType],
+      ) -> Option<(db::Score, db::LastPeriodType)> {
+        if let Some(score) = scores.iter().find(|score| score.id == score_id) {
+          let lpt: db::LastPeriodType = last_period_types
+            .iter()
+            .find(|period_type| period_type.id == score.last_period_type_id)
+            .unwrap()
+            .clone();
+          Some((*score, lpt))
+        } else {
+          None
+        }
+      }
+      for db_game in res.flatten() {
+        let game_outcome = if let Some(score_id) = db_game.score_id {
+          find_score(score_id, &scores, &last_period_types)
+        } else {
+          None
+        };
+        let team_game: Game = db_game.db_to_crate(game_outcome, team);
+        team_games.push(team_game)
+      }
+
+      games.insert(team.api_id, team_games);
+    }
+    games
+  }
+
+  fn execute_file(&self, path: &str) {
+    use std::io::Read;
+
+    let mut f = std::fs::File::open(path).unwrap();
+    let mut buffer = String::new();
+    f.read_to_string(&mut buffer).unwrap().to_string();
+
+    // CLEANUP handle error
+    let _ = self.conn.execute_batch(&buffer);
+  }
+
+  pub fn initialize(db_path: &Path) -> Self {
+    let conn = rusqlite::Connection::open(db_path).unwrap();
+    let db = Self { conn };
+    println!("initializing db...");
+    db.execute_file("../data/init.sql");
+    db
+  }
+
+  fn get_teams(&self) -> Vec<Team> {
+    let db_divisions = self.all_divisions();
+    let db_teams: Vec<db::Team> = self.all_teams();
+    db_teams
+      .iter()
+      .map(|db_team| db_team.clone().db_to_crate(&db_divisions))
+      .collect()
+  }
+}
+
+#[derive(Copy, Clone, Debug)]
 struct ShowDivision {
   central: bool,
   pacific: bool,
@@ -64,11 +375,10 @@ struct ShowDivision {
   metro: bool,
 }
 
-struct App {
-  games: HashMap<i32, Vec<full_json::Game>>,
-  show: ShowDivision,
-}
+// Key is the Team's api_id.
+type GamesByTeam = HashMap<i32, Vec<Game>>;
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 enum Division {
   Central,
   Pacific,
@@ -76,84 +386,51 @@ enum Division {
   Metropolitan,
 }
 
+#[derive(Clone, Debug)]
 struct Team {
-  id: i32,
+  db_id: i32,
+  api_id: i32,
   color: Color32,
   abbrev: String,
   division: Division,
 }
 
-impl Team {
-  fn new(id: i32, abbrev: &str, (r, g, b): (u8, u8, u8), division: Division) -> Self {
-    Self {
-      id,
-      color: Color32::from_rgb(r, g, b),
-      abbrev: String::from(abbrev),
-      division,
-    }
-  }
+#[derive(Copy, Clone, Debug)]
+struct Game {
+  points: Option<f32>,
 }
 
-// TODO Some of these colors are too dark.
-fn all_teams() -> Vec<Team> {
-  vec![
-    // Western
-    Team::new(24, "ANA", (252, 76, 2), Division::Pacific),
-    Team::new(20, "CGY", (210, 0, 28), Division::Pacific),
-    Team::new(22, "EDM", (4, 30, 66), Division::Pacific),
-    Team::new(26, "LAK", (162, 170, 173), Division::Pacific),
-    Team::new(55, "SEA", (104, 162, 185), Division::Pacific),
-    Team::new(28, "SJS", (0, 109, 117), Division::Pacific),
-    Team::new(23, "VAN", (0, 32, 91), Division::Pacific),
-    Team::new(54, "VGK", (185, 151, 91), Division::Pacific),
-    Team::new(53, "ARI", (140, 38, 51), Division::Central),
-    Team::new(16, "CHI", (207, 10, 44), Division::Central),
-    Team::new(21, "COL", (111, 38, 61), Division::Central),
-    Team::new(25, "DAL", (0, 104, 71), Division::Central),
-    Team::new(30, "MIN", (2, 73, 48), Division::Central),
-    Team::new(18, "NSH", (255, 184, 28), Division::Central),
-    Team::new(19, "STL", (0, 47, 135), Division::Central),
-    Team::new(52, "WPG", (4, 30, 66), Division::Central),
-    // Eastern
-    Team::new(6, "BOS", (252, 181, 20), Division::Atlantic),
-    Team::new(7, "BUF", (0, 48, 135), Division::Atlantic),
-    Team::new(17, "DET", (206, 17, 38), Division::Atlantic),
-    Team::new(13, "FLA", (185, 151, 91), Division::Atlantic),
-    Team::new(8, "MTL", (175, 30, 45), Division::Atlantic),
-    Team::new(9, "OTT", (183, 146, 87), Division::Atlantic),
-    Team::new(14, "TBL", (0, 40, 104), Division::Atlantic),
-    Team::new(10, "TOR", (0, 32, 91), Division::Atlantic),
-    Team::new(12, "CAR", (206, 17, 38), Division::Metropolitan),
-    Team::new(29, "CBJ", (0, 38, 84), Division::Metropolitan),
-    Team::new(1, "NJD", (206, 17, 38), Division::Metropolitan),
-    Team::new(2, "NYI", (0, 83, 155), Division::Metropolitan),
-    Team::new(3, "NYR", (0, 56, 168), Division::Metropolitan),
-    Team::new(4, "PHI", (247, 73, 2), Division::Metropolitan),
-    Team::new(5, "PIT", (252, 181, 20), Division::Metropolitan),
-    Team::new(15, "WSH", (200, 16, 46), Division::Metropolitan),
-  ]
+#[derive(Clone, Debug)]
+struct AppData {
+  games: GamesByTeam,
+  teams: Vec<Team>,
+  // api_response: Option<json::ApiResponse>,
 }
 
-fn find_team(id: i32) -> Option<Team> {
-  all_teams().into_iter().find(|team| team.id == id)
+#[derive(Debug)]
+struct App {
+  db: DB,
+  tx: std::sync::mpsc::Sender<json::ApiResponse>,
+  rx: std::sync::mpsc::Receiver<json::ApiResponse>,
+  data: AppData,
+  show: ShowDivision,
 }
 
 impl Default for App {
   fn default() -> Self {
-    let mut games = HashMap::new();
-    for team in all_teams() {
-      let json_contents = fs::read_to_string(format!("../data/{}.json", team.abbrev)).unwrap();
-      let parsed: full_json::TeamSchedule = serde_json::from_str(&json_contents).unwrap();
-      let mut team_games = vec![];
-      for game in parsed.games.iter() {
-        if game.game_type == 2 {
-          team_games.push(*game)
-        }
-      }
-      games.insert(team.id, team_games);
-    }
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    let path = std::path::Path::new("../data/hockeyplots.db");
+    let db = DB::initialize(path);
+
+    let teams = db.get_teams();
+    let games = db.all_games(&teams);
+
     Self {
-      games,
+      db,
+      tx,
+      rx,
+      data: AppData { games, teams },
       show: ShowDivision {
         central: true,
         pacific: true,
@@ -175,7 +452,123 @@ impl eframe::App for App {
       ui.checkbox(&mut self.show.pacific, "Pacific");
       ui.checkbox(&mut self.show.atlantic, "Atlantic");
       ui.checkbox(&mut self.show.central, "Central");
+
+      if ui.button("update").clicked() {
+        let tx: std::sync::mpsc::Sender<json::ApiResponse> = self.tx.clone();
+        let ctx_ = ctx.clone();
+
+        let teams = self.db.get_teams();
+        tokio::spawn(async move {
+          let api_response = json::api::load_games(teams).await.unwrap();
+          let _ = tx.send(api_response);
+          ctx_.request_repaint();
+        });
+      }
     });
+
+    fn make_app_data(api_response: &json::ApiResponse, teams: &[Team]) -> AppData {
+      let mut games: GamesByTeam = HashMap::new();
+      for (team_api_id, schedule) in &api_response.schedules {
+        let team = teams
+          .iter()
+          .find(|team| team.api_id == *team_api_id)
+          .unwrap();
+        let mut team_games = vec![];
+
+        for game in &schedule.games {
+          if !game.is_preseason() {
+            team_games.push(game.to_game(team));
+          }
+        }
+        games.insert(team.api_id, team_games);
+      }
+
+      AppData {
+        games,
+        teams: teams.to_vec(),
+      }
+    }
+
+    if let Ok(api_response) = self.rx.try_recv() {
+      let new_data = make_app_data(&api_response, &self.data.teams);
+      self.data = new_data.clone();
+      let mut game_statement = self
+        .db
+        .conn
+        .prepare("INSERT INTO games (api_id, home_team_id, away_team_id, score_id) VALUES (?1, ?2, ?3, ?4);")
+        .unwrap();
+      let mut score_statement = self
+        .db
+        .conn
+        .prepare("INSERT INTO scores (home, away, last_period_type_id) VALUES (?1, ?2, ?3);")
+        .unwrap();
+      fn get_period_type_id(db: &DB, name: &str) -> i32 {
+        db.conn
+          .query_row(
+            "SELECT id FROM last_period_types WHERE name = ?1",
+            [name],
+            |r| r.get(0),
+          )
+          .unwrap()
+      }
+      let mut period_type_ids: HashMap<json::PeriodType, i32> = HashMap::new();
+      period_type_ids.insert(json::PeriodType::REG, get_period_type_id(&self.db, "Regulation"));
+      period_type_ids.insert(json::PeriodType::SO, get_period_type_id(&self.db, "Shootout"));
+      period_type_ids.insert(json::PeriodType::OT, get_period_type_id(&self.db, "Overtime"));
+      let mut game_ids: HashSet<i32> = HashSet::new();
+      for (_team_api_id, schedule) in api_response.schedules {
+        for json_game in schedule.games {
+          let mut score_id = None;
+          if let Some(outcome) = json_game.game_outcome {
+            if !json_game.is_preseason() && game_ids.get(&json_game.id).is_none() {
+              game_ids.insert(json_game.id);
+              fn get_score(team: json::GameTeam, team_str: &str) -> i32 {
+                team.score.unwrap_or_else(|| {
+                  panic!("json_game with an outcome should have a score for the {team_str} team")
+                })
+              }
+              score_id = Some(
+                // CLEANUP use named parameters
+                score_statement
+                  .insert([
+                    get_score(json_game.home_team, "home"),
+                    get_score(json_game.away_team, "away"),
+                    *period_type_ids.get(&outcome.last_period_type).unwrap(),
+                  ])
+                  .unwrap(),
+              );
+            }
+          } else {
+            println!("got no gameOutcome for {}", json_game.id);
+          }
+          fn get_db_id(game_team: json::GameTeam, teams: &[Team]) -> i32 {
+            teams
+              .iter()
+              .find(|team| team.api_id == game_team.id)
+              .unwrap()
+              .db_id
+          }
+          if !json_game.is_preseason() {
+            // CLEANUP use named parameters
+            match game_statement.execute((
+              json_game.id,
+              get_db_id(json_game.home_team, &self.data.teams),
+              get_db_id(json_game.away_team, &self.data.teams),
+              score_id,
+            )) {
+              Ok(_) => (),
+              Err(e) => {
+                println!(
+                  "error on game_statement.execute: {:?}\n with params:\n{}, {}, {}, {:?}",
+                  e, json_game.id, json_game.home_team.id, json_game.away_team.id, score_id,
+                )
+              }
+            }
+          }
+        }
+      }
+    }
+
     egui::CentralPanel::default().show(ctx, |ui| {
       egui_plot::Plot::new("plot")
         .legend(Legend::default().text_style(egui::TextStyle::Heading))
@@ -188,33 +581,22 @@ impl eframe::App for App {
               Division::Atlantic => show.atlantic,
             }
           }
-          for (team_id, games_) in &self.games {
-            let team: Team = find_team(*team_id).unwrap();
-            if show_team(self.show, &team) {
+          for (team_id, games_) in &self.data.games {
+            let team: &Team = self
+              .data
+              .teams
+              .iter()
+              .find(|team| team.api_id == *team_id)
+              .unwrap();
+            if show_team(self.show, team) {
               let mut games: Vec<PlotPoint> = vec![];
               let mut points_so_far = 0.0;
 
               games.push(PlotPoint { x: 0.0, y: 0.0 });
 
               for (idx, game) in games_.iter().enumerate() {
-                let (edm, opponent) = if game.home_team.id == *team_id {
-                  (game.home_team, game.away_team)
-                } else {
-                  (game.away_team, game.home_team)
-                };
-                fn points_for_loss(outcome: full_json::GameOutcome) -> f32 {
-                  match outcome.last_period_type {
-                    full_json::PeriodType::SO | full_json::PeriodType::OT => 1.0,
-                    full_json::PeriodType::REG => 0.0,
-                  }
-                }
-                if let Some(outcome) = game.game_outcome {
-                  let points = if edm.score > opponent.score {
-                    2.0
-                  } else {
-                    points_for_loss(outcome)
-                  };
-                  points_so_far += points - 1.0;
+                if let Some(points_) = game.points {
+                  points_so_far += points_ - 1.0;
                   games.push(PlotPoint {
                     x: (1 + idx) as f64,
                     y: points_so_far as f64,
@@ -223,7 +605,11 @@ impl eframe::App for App {
               }
 
               let game_points = PlotPoints::Owned(games.clone());
-              plot_ui.line(Line::new(game_points).name(team.abbrev).color(team.color));
+              plot_ui.line(
+                Line::new(game_points)
+                  .name(team.abbrev.clone())
+                  .color(team.color),
+              );
             }
           }
         });

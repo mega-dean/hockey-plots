@@ -172,7 +172,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 }
             ],
             "awayTeam": {
@@ -1034,7 +1034,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 }
             ],
             "awayTeam": {
@@ -1778,7 +1778,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 },
                 {
                     "id": 386,
@@ -2155,7 +2155,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS-D",
-                    "sequenceNumber": 33
+                    "sequenceNumber": 34
                 },
                 {
                     "id": 353,
@@ -3209,7 +3209,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 },
                 {
                     "id": 353,
@@ -3684,7 +3684,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 },
                 {
                     "id": 355,
@@ -3983,7 +3983,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 }
             ],
             "awayTeam": {
@@ -4096,7 +4096,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS-D",
-                    "sequenceNumber": 33
+                    "sequenceNumber": 34
                 }
             ],
             "awayTeam": {
@@ -4547,7 +4547,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 }
             ],
             "awayTeam": {
@@ -6447,7 +6447,7 @@
                     "default": "Voronkov"
                 }
             },
-            "threeMinRecap": "/video/recap-oilers-at-blue-jackets-3-7-24-6348434365112",
+            "threeMinRecap": "/video/recap-oilers-at-blue-jackets-3-7-24-6348435610112",
             "gameCenterLink": "/gamecenter/edm-vs-cbj/2024/03/07/2023020995"
         },
         {
@@ -6809,7 +6809,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 },
                 {
                     "id": 2,
@@ -7606,32 +7606,25 @@
             "gameScheduleState": "OK",
             "tvBroadcasts": [
                 {
-                    "id": 289,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SNW",
-                    "sequenceNumber": 1
-                },
-                {
                     "id": 385,
                     "market": "N",
                     "countryCode": "US",
                     "network": "TNT",
-                    "sequenceNumber": 1
+                    "sequenceNumber": 4
                 },
                 {
                     "id": 501,
                     "market": "N",
                     "countryCode": "US",
                     "network": "truTV",
-                    "sequenceNumber": 1
+                    "sequenceNumber": 6
                 },
                 {
                     "id": 519,
                     "market": "N",
                     "countryCode": "US",
                     "network": "MAX",
-                    "sequenceNumber": 1
+                    "sequenceNumber": 9
                 },
                 {
                     "id": 283,
@@ -7639,6 +7632,13 @@
                     "countryCode": "CA",
                     "network": "SN360",
                     "sequenceNumber": 23
+                },
+                {
+                    "id": 289,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SNW",
+                    "sequenceNumber": 30
                 }
             ],
             "awayTeam": {
@@ -7808,7 +7808,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "SN360",
-                    "sequenceNumber": 1
+                    "sequenceNumber": 23
                 },
                 {
                     "id": 4,
@@ -7843,7 +7843,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 }
             ],
             "awayTeam": {
@@ -7915,34 +7915,6 @@
             "gameScheduleState": "OK",
             "tvBroadcasts": [
                 {
-                    "id": 284,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SN1",
-                    "sequenceNumber": 1
-                },
-                {
-                    "id": 287,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SNE",
-                    "sequenceNumber": 1
-                },
-                {
-                    "id": 288,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SNO",
-                    "sequenceNumber": 1
-                },
-                {
-                    "id": 289,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SNW",
-                    "sequenceNumber": 1
-                },
-                {
                     "id": 385,
                     "market": "N",
                     "countryCode": "US",
@@ -7955,6 +7927,34 @@
                     "countryCode": "US",
                     "network": "MAX",
                     "sequenceNumber": 9
+                },
+                {
+                    "id": 284,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN1",
+                    "sequenceNumber": 22
+                },
+                {
+                    "id": 287,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SNE",
+                    "sequenceNumber": 26
+                },
+                {
+                    "id": 288,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SNO",
+                    "sequenceNumber": 27
+                },
+                {
+                    "id": 289,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SNW",
+                    "sequenceNumber": 30
                 },
                 {
                     "id": 281,
@@ -8042,7 +8042,7 @@
             "easternUTCOffset": "-04:00",
             "venueUTCOffset": "-06:00",
             "venueTimezone": "America/Edmonton",
-            "gameState": "FUT",
+            "gameState": "OFF",
             "gameScheduleState": "OK",
             "tvBroadcasts": [
                 {
@@ -8069,7 +8069,7 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/ARI_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/ARI_dark.svg",
                 "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/ARI/20232024/ARI-radio.m3u8"
+                "score": 3
             },
             "homeTeam": {
                 "id": 22,
@@ -8080,14 +8080,37 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
                 "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8",
                 "airlineLink": "https://www.aircanada.com/ca/en/aco/home.html",
                 "airlineDesc": "AIR CANADA FLIGHTS",
                 "hotelLink": "https://edmontonsbesthotels.com/hoteldeals?utm_source&#x3D;referral&amp;utm_medium&#x3D;social_media&amp;utm_campaign&#x3D;explore_edmonton_Q42022&amp;utm_content&#x3D;content_creator",
-                "hotelDesc": "HOTEL DEALS IN EDMONTON"
+                "hotelDesc": "HOTEL DEALS IN EDMONTON",
+                "score": 2
             },
-            "periodDescriptor": {},
-            "ticketsLink": "https://www.ticketmaster.com/event/11005F17C6E84926?brand=edmontonoilers&artistid=805943&wt.mc_id=NHL_TEAM_EDM_SCHEDULE_GM39&utm_source=nhl.com&utm_medium=client&utm_campaign=NHL_TEAM_EDM&utm_content=SCHEDULE_GM39",
+            "periodDescriptor": {
+                "periodType": "OT"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "OT"
+            },
+            "winningGoalie": {
+                "playerId": 8478872,
+                "firstInitial": {
+                    "default": "K."
+                },
+                "lastName": {
+                    "default": "Vejmelka"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8481711,
+                "firstInitial": {
+                    "default": "M."
+                },
+                "lastName": {
+                    "default": "Maccelli"
+                }
+            },
+            "threeMinRecap": "/video/recap-coyotes-at-oilers-4-12-24-6350822530112",
             "gameCenterLink": "/gamecenter/ari-vs-edm/2024/04/12/2023021267"
         },
         {
@@ -8103,7 +8126,7 @@
             "easternUTCOffset": "-04:00",
             "venueUTCOffset": "-06:00",
             "venueTimezone": "America/Edmonton",
-            "gameState": "FUT",
+            "gameState": "OFF",
             "gameScheduleState": "OK",
             "tvBroadcasts": [
                 {
@@ -8132,7 +8155,7 @@
                     "market": "N",
                     "countryCode": "CA",
                     "network": "TVAS2",
-                    "sequenceNumber": 32
+                    "sequenceNumber": 33
                 }
             ],
             "awayTeam": {
@@ -8144,7 +8167,7 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/VAN_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/VAN_dark.svg",
                 "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/VAN/20232024/VAN-radio.m3u8"
+                "score": 3
             },
             "homeTeam": {
                 "id": 22,
@@ -8155,14 +8178,38 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
                 "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8",
                 "airlineLink": "https://www.aircanada.com/ca/en/aco/home.html",
                 "airlineDesc": "AIR CANADA FLIGHTS",
                 "hotelLink": "https://edmontonsbesthotels.com/hoteldeals?utm_source&#x3D;referral&amp;utm_medium&#x3D;social_media&amp;utm_campaign&#x3D;explore_edmonton_Q42022&amp;utm_content&#x3D;content_creator",
-                "hotelDesc": "HOTEL DEALS IN EDMONTON"
+                "hotelDesc": "HOTEL DEALS IN EDMONTON",
+                "score": 1
             },
-            "periodDescriptor": {},
-            "ticketsLink": "https://www.ticketmaster.com/event/11005F17C6ED4928?brand=edmontonoilers&artistid=805943&wt.mc_id=NHL_TEAM_EDM_SCHEDULE_GM40&utm_source=nhl.com&utm_medium=client&utm_campaign=NHL_TEAM_EDM&utm_content=SCHEDULE_GM40",
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "REG"
+            },
+            "winningGoalie": {
+                "playerId": 8479193,
+                "firstInitial": {
+                    "default": "C."
+                },
+                "lastName": {
+                    "default": "DeSmith"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8480459,
+                "firstInitial": {
+                    "default": "P."
+                },
+                "lastName": {
+                    "default": "Suter"
+                }
+            },
+            "threeMinRecap": "/video/recap-canucks-at-oilers-4-13-24-6350903887112",
+            "threeMinRecapFr": "/fr/video/recap-canucks-at-oilers-4-13-24-6350905455112",
             "gameCenterLink": "/gamecenter/van-vs-edm/2024/04/13/2023021280"
         },
         {
@@ -8178,7 +8225,7 @@
             "easternUTCOffset": "-04:00",
             "venueUTCOffset": "-06:00",
             "venueTimezone": "America/Edmonton",
-            "gameState": "FUT",
+            "gameState": "OFF",
             "gameScheduleState": "OK",
             "tvBroadcasts": [
                 {
@@ -8219,7 +8266,7 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/SJS_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/SJS_dark.svg",
                 "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/SJS/20232024/SJS-radio.m3u8"
+                "score": 2
             },
             "homeTeam": {
                 "id": 22,
@@ -8230,14 +8277,38 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
                 "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8",
                 "airlineLink": "https://www.aircanada.com/ca/en/aco/home.html",
                 "airlineDesc": "AIR CANADA FLIGHTS",
                 "hotelLink": "https://edmontonsbesthotels.com/hoteldeals?utm_source&#x3D;referral&amp;utm_medium&#x3D;social_media&amp;utm_campaign&#x3D;explore_edmonton_Q42022&amp;utm_content&#x3D;content_creator",
-                "hotelDesc": "HOTEL DEALS IN EDMONTON"
+                "hotelDesc": "HOTEL DEALS IN EDMONTON",
+                "score": 9
             },
-            "periodDescriptor": {},
-            "ticketsLink": "https://www.ticketmaster.com/event/11005F17C6F3492A?brand=edmontonoilers&artistid=805943&wt.mc_id=NHL_TEAM_EDM_SCHEDULE_GM41&utm_source=nhl.com&utm_medium=client&utm_campaign=NHL_TEAM_EDM&utm_content=SCHEDULE_GM41",
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "REG"
+            },
+            "winningGoalie": {
+                "playerId": 8479973,
+                "firstInitial": {
+                    "default": "S."
+                },
+                "lastName": {
+                    "default": "Skinner"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8477998,
+                "firstInitial": {
+                    "default": "W."
+                },
+                "lastName": {
+                    "default": "Foegele"
+                }
+            },
+            "threeMinRecap": "/video/recap-sharks-at-oilers-4-15-24-6351001323112",
+            "threeMinRecapFr": "/fr/video/recap-sharks-at-oilers-4-15-24-6351000660112",
             "gameCenterLink": "/gamecenter/sjs-vs-edm/2024/04/15/2023021293"
         },
         {
@@ -8253,7 +8324,7 @@
             "easternUTCOffset": "-04:00",
             "venueUTCOffset": "-07:00",
             "venueTimezone": "America/Phoenix",
-            "gameState": "FUT",
+            "gameState": "OFF",
             "gameScheduleState": "OK",
             "tvBroadcasts": [
                 {
@@ -8262,6 +8333,13 @@
                     "countryCode": "CA",
                     "network": "SN",
                     "sequenceNumber": 21
+                },
+                {
+                    "id": 284,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN1",
+                    "sequenceNumber": 22
                 },
                 {
                     "id": 281,
@@ -8287,9 +8365,9 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
                 "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8",
                 "airlineLink": "https://www.aircanada.com/ca/en/aco/home.html",
-                "airlineDesc": "AIR CANADA FLIGHTS"
+                "airlineDesc": "AIR CANADA FLIGHTS",
+                "score": 2
             },
             "homeTeam": {
                 "id": 53,
@@ -8300,10 +8378,34 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/ARI_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/ARI_dark.svg",
                 "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/ARI/20232024/ARI-radio.m3u8"
+                "score": 5
             },
-            "periodDescriptor": {},
-            "ticketsLink": "https://www.ticketmaster.com/event/19005EEA80300D44?brand=phxcoyotes&artistid=806002&wt.mc_id=NHL_TEAM_ARI_SCHEDULE_GM41&utm_source=nhl.com&utm_medium=client&utm_campaign=NHL_TEAM_ARI&utm_content=SCHEDULE_GM41",
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "REG"
+            },
+            "winningGoalie": {
+                "playerId": 8478971,
+                "firstInitial": {
+                    "default": "C."
+                },
+                "lastName": {
+                    "default": "Ingram"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8478474,
+                "firstInitial": {
+                    "default": "L."
+                },
+                "lastName": {
+                    "default": "Crouse"
+                }
+            },
+            "threeMinRecap": "/video/recap-oilers-at-coyotes-4-17-24-6351145442112",
+            "threeMinRecapFr": "/fr/video/recap-oilers-at-coyotes-4-17-24-6351145253112",
             "gameCenterLink": "/gamecenter/edm-vs-ari/2024/04/17/2023021306"
         },
         {
@@ -8319,23 +8421,9 @@
             "easternUTCOffset": "-04:00",
             "venueUTCOffset": "-06:00",
             "venueTimezone": "America/Denver",
-            "gameState": "FUT",
+            "gameState": "OFF",
             "gameScheduleState": "OK",
             "tvBroadcasts": [
-                {
-                    "id": 287,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SNE",
-                    "sequenceNumber": 1
-                },
-                {
-                    "id": 288,
-                    "market": "N",
-                    "countryCode": "CA",
-                    "network": "SNO",
-                    "sequenceNumber": 1
-                },
                 {
                     "id": 309,
                     "market": "N",
@@ -8351,11 +8439,18 @@
                     "sequenceNumber": 22
                 },
                 {
-                    "id": 281,
+                    "id": 287,
                     "market": "N",
                     "countryCode": "CA",
-                    "network": "TVAS",
-                    "sequenceNumber": 31
+                    "network": "SNE",
+                    "sequenceNumber": 26
+                },
+                {
+                    "id": 288,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SNO",
+                    "sequenceNumber": 27
                 }
             ],
             "awayTeam": {
@@ -8367,9 +8462,9 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
                 "awaySplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8",
                 "airlineLink": "https://www.aircanada.com/ca/en/aco/home.html",
-                "airlineDesc": "AIR CANADA FLIGHTS"
+                "airlineDesc": "AIR CANADA FLIGHTS",
+                "score": 1
             },
             "homeTeam": {
                 "id": 21,
@@ -8380,11 +8475,621 @@
                 "logo": "https://assets.nhle.com/logos/nhl/svg/COL_light.svg",
                 "darkLogo": "https://assets.nhle.com/logos/nhl/svg/COL_dark.svg",
                 "homeSplitSquad": false,
-                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/COL/20232024/COL-radio.m3u8"
+                "score": 5
             },
-            "periodDescriptor": {},
-            "ticketsLink": "https://Avalanche.KSETickets.com/NHL_TEAM_COL_SCHEDULE_PAGE_GM41",
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "REG"
+            },
+            "winningGoalie": {
+                "playerId": 8481020,
+                "firstInitial": {
+                    "default": "J."
+                },
+                "lastName": {
+                    "default": "Annunen"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8478420,
+                "firstInitial": {
+                    "default": "M."
+                },
+                "lastName": {
+                    "default": "Rantanen"
+                }
+            },
+            "threeMinRecap": "/video/recap-oilers-at-avalanche-4-18-24-6351210097112",
             "gameCenterLink": "/gamecenter/edm-vs-col/2024/04/18/2023021310"
+        },
+        {
+            "id": 2023030181,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-04-22",
+            "venue": {
+                "default": "Rogers Place"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-04-23T02:00:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-06:00",
+            "venueTimezone": "America/Edmonton",
+            "gameState": "OFF",
+            "gameScheduleState": "OK",
+            "tvBroadcasts": [
+                {
+                    "id": 307,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "ESPN2",
+                    "sequenceNumber": 3
+                },
+                {
+                    "id": 282,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN",
+                    "sequenceNumber": 21
+                },
+                {
+                    "id": 4,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "CBC",
+                    "sequenceNumber": 24
+                },
+                {
+                    "id": 291,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "TVAS2",
+                    "sequenceNumber": 33
+                },
+                {
+                    "id": 341,
+                    "market": "A",
+                    "countryCode": "US",
+                    "network": "BSSC",
+                    "sequenceNumber": 84
+                }
+            ],
+            "awayTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "awaySplitSquad": false,
+                "score": 4
+            },
+            "homeTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "homeSplitSquad": false,
+                "score": 7
+            },
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "REG"
+            },
+            "winningGoalie": {
+                "playerId": 8479973,
+                "firstInitial": {
+                    "default": "S."
+                },
+                "lastName": {
+                    "default": "Skinner"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8477934,
+                "firstInitial": {
+                    "default": "L."
+                },
+                "lastName": {
+                    "default": "Draisaitl"
+                }
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 0,
+                "gameNumberOfSeries": 1
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/oilers-vs-kings",
+            "threeMinRecap": "/video/recap-kings-at-oilers-4-22-24-6351451273112",
+            "threeMinRecapFr": "/fr/video/recap-kings-at-oilers-4-22-24-6351450212112",
+            "gameCenterLink": "/gamecenter/lak-vs-edm/2024/04/22/2023030181"
+        },
+        {
+            "id": 2023030182,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-04-24",
+            "venue": {
+                "default": "Rogers Place"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-04-25T02:00:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-06:00",
+            "venueTimezone": "America/Edmonton",
+            "gameState": "OFF",
+            "gameScheduleState": "OK",
+            "tvBroadcasts": [
+                {
+                    "id": 403,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "TBS",
+                    "sequenceNumber": 5
+                },
+                {
+                    "id": 519,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "MAX",
+                    "sequenceNumber": 9
+                },
+                {
+                    "id": 282,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN",
+                    "sequenceNumber": 21
+                },
+                {
+                    "id": 4,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "CBC",
+                    "sequenceNumber": 24
+                },
+                {
+                    "id": 281,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "TVAS",
+                    "sequenceNumber": 31
+                },
+                {
+                    "id": 355,
+                    "market": "A",
+                    "countryCode": "US",
+                    "network": "BSW",
+                    "sequenceNumber": 57
+                }
+            ],
+            "awayTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "awaySplitSquad": false,
+                "score": 5
+            },
+            "homeTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "homeSplitSquad": false,
+                "score": 4
+            },
+            "periodDescriptor": {
+                "periodType": "OT"
+            },
+            "gameOutcome": {
+                "lastPeriodType": "OT"
+            },
+            "winningGoalie": {
+                "playerId": 8475660,
+                "firstInitial": {
+                    "default": "C."
+                },
+                "lastName": {
+                    "default": "Talbot"
+                }
+            },
+            "winningGoalScorer": {
+                "playerId": 8471685,
+                "firstInitial": {
+                    "default": "A."
+                },
+                "lastName": {
+                    "default": "Kopitar"
+                }
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 1,
+                "gameNumberOfSeries": 2
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/oilers-vs-kings",
+            "threeMinRecap": "/video/recap-kings-at-oilers-4-24-24-6351699881112",
+            "threeMinRecapFr": "/fr/video/recap-kings-at-oilers-4-24-24-6351700215112",
+            "gameCenterLink": "/gamecenter/lak-vs-edm/2024/04/24/2023030182"
+        },
+        {
+            "id": 2023030183,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-04-26",
+            "venue": {
+                "default": "Crypto.com Arena"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-04-27T02:30:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-07:00",
+            "venueTimezone": "America/Los_Angeles",
+            "gameState": "FUT",
+            "gameScheduleState": "OK",
+            "tvBroadcasts": [
+                {
+                    "id": 403,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "TBS",
+                    "sequenceNumber": 5
+                },
+                {
+                    "id": 519,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "MAX",
+                    "sequenceNumber": 9
+                },
+                {
+                    "id": 282,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN",
+                    "sequenceNumber": 21
+                },
+                {
+                    "id": 291,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "TVAS2",
+                    "sequenceNumber": 33
+                },
+                {
+                    "id": 355,
+                    "market": "H",
+                    "countryCode": "US",
+                    "network": "BSW",
+                    "sequenceNumber": 57
+                }
+            ],
+            "awayTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "awaySplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8"
+            },
+            "homeTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "homeSplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/LAK/20232024/LAK-radio.m3u8"
+            },
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 1,
+                "gameNumberOfSeries": 3
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/kings-vs-oilers",
+            "ticketsLink": "https://www.nhl.com/kings/tickets/",
+            "gameCenterLink": "/gamecenter/edm-vs-lak/2024/04/26/2023030183"
+        },
+        {
+            "id": 2023030184,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-04-28",
+            "venue": {
+                "default": "Crypto.com Arena"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-04-29T02:30:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-07:00",
+            "venueTimezone": "America/Los_Angeles",
+            "gameState": "FUT",
+            "gameScheduleState": "OK",
+            "tvBroadcasts": [
+                {
+                    "id": 403,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "TBS",
+                    "sequenceNumber": 5
+                },
+                {
+                    "id": 501,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "truTV",
+                    "sequenceNumber": 6
+                },
+                {
+                    "id": 519,
+                    "market": "N",
+                    "countryCode": "US",
+                    "network": "MAX",
+                    "sequenceNumber": 9
+                },
+                {
+                    "id": 282,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN",
+                    "sequenceNumber": 21
+                },
+                {
+                    "id": 284,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "SN1",
+                    "sequenceNumber": 22
+                },
+                {
+                    "id": 281,
+                    "market": "N",
+                    "countryCode": "CA",
+                    "network": "TVAS",
+                    "sequenceNumber": 31
+                },
+                {
+                    "id": 355,
+                    "market": "H",
+                    "countryCode": "US",
+                    "network": "BSW",
+                    "sequenceNumber": 57
+                }
+            ],
+            "awayTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "awaySplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8"
+            },
+            "homeTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "homeSplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/LAK/20232024/LAK-radio.m3u8"
+            },
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 1,
+                "gameNumberOfSeries": 4
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/kings-vs-oilers",
+            "ticketsLink": "https://www.nhl.com/kings/tickets/",
+            "gameCenterLink": "/gamecenter/edm-vs-lak/2024/04/28/2023030184"
+        },
+        {
+            "id": 2023030185,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-05-01",
+            "venue": {
+                "default": "Rogers Place"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-05-01T16:00:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-06:00",
+            "venueTimezone": "America/Edmonton",
+            "gameState": "FUT",
+            "gameScheduleState": "TBD",
+            "tvBroadcasts": [],
+            "awayTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "awaySplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/LAK/20232024/LAK-radio.m3u8"
+            },
+            "homeTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "homeSplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8"
+            },
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 1,
+                "gameNumberOfSeries": 5
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/oilers-vs-kings",
+            "ticketsLink": "https://www.nhl.com/oilers/tickets/",
+            "gameCenterLink": "/gamecenter/lak-vs-edm/2024/05/01/2023030185"
+        },
+        {
+            "id": 2023030186,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-05-03",
+            "venue": {
+                "default": "Crypto.com Arena"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-05-03T16:00:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-07:00",
+            "venueTimezone": "America/Los_Angeles",
+            "gameState": "FUT",
+            "gameScheduleState": "TBD",
+            "tvBroadcasts": [],
+            "awayTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "awaySplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8"
+            },
+            "homeTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "homeSplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/LAK/20232024/LAK-radio.m3u8"
+            },
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 1,
+                "gameNumberOfSeries": 6
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/kings-vs-oilers",
+            "ticketsLink": "https://www.nhl.com/kings/tickets/",
+            "gameCenterLink": "/gamecenter/edm-vs-lak/2024/05/03/2023030186"
+        },
+        {
+            "id": 2023030187,
+            "season": 20232024,
+            "gameType": 3,
+            "gameDate": "2024-05-05",
+            "venue": {
+                "default": "Rogers Place"
+            },
+            "neutralSite": false,
+            "startTimeUTC": "2024-05-05T16:00:00Z",
+            "easternUTCOffset": "-04:00",
+            "venueUTCOffset": "-06:00",
+            "venueTimezone": "America/Edmonton",
+            "gameState": "FUT",
+            "gameScheduleState": "TBD",
+            "tvBroadcasts": [],
+            "awayTeam": {
+                "id": 26,
+                "placeName": {
+                    "default": "Los Angeles"
+                },
+                "abbrev": "LAK",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/LAK_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/LAK_dark.svg",
+                "awaySplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/LAK/20232024/LAK-radio.m3u8"
+            },
+            "homeTeam": {
+                "id": 22,
+                "placeName": {
+                    "default": "Edmonton"
+                },
+                "abbrev": "EDM",
+                "logo": "https://assets.nhle.com/logos/nhl/svg/EDM_light.svg",
+                "darkLogo": "https://assets.nhle.com/logos/nhl/svg/EDM_dark.svg",
+                "homeSplitSquad": false,
+                "radioLink": "https://d2igy0yla8zi0u.cloudfront.net/EDM/20232024/EDM-radio.m3u8"
+            },
+            "periodDescriptor": {
+                "periodType": "REG"
+            },
+            "seriesStatus": {
+                "round": 1,
+                "seriesAbbrev": "R1",
+                "seriesLetter": "H",
+                "neededToWin": 4,
+                "topSeedWins": 1,
+                "bottomSeedWins": 1,
+                "gameNumberOfSeries": 7
+            },
+            "seriesUrl": "/schedule/playoff-series/2024/series-h/oilers-vs-kings",
+            "ticketsLink": "https://www.nhl.com/oilers/tickets/",
+            "gameCenterLink": "/gamecenter/lak-vs-edm/2024/05/05/2023030187"
         }
     ]
 }

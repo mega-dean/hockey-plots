@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS games;
+DROP TABLE IF EXISTS last_period_types;
+DROP TABLE IF EXISTS scores;
+DROP TABLE IF EXISTS divisions;
+DROP TABLE IF EXISTS teams;
