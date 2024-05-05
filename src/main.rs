@@ -148,14 +148,6 @@ mod json {
     OT,
   }
 
-  #[derive(Debug, Deserialize, Copy, Clone, PartialEq)]
-  #[allow(clippy::upper_case_acronyms)]
-  pub enum GameState {
-    FINAL, // preseason
-    OFF,   // regular season
-    FUT,   // regular season, future
-  }
-
   #[derive(Debug, Deserialize, Copy, Clone)]
   #[serde(rename_all = "camelCase")]
   pub struct GameOutcome {
@@ -170,12 +162,24 @@ mod json {
     pub away_team: GameTeam,
     pub game_type: u8,
     pub game_outcome: Option<GameOutcome>,
-    pub game_state: GameState,
+  }
+
+  pub enum GameType {
+    Preseason,
+    RegularSeason,
+    Playoffs,
   }
 
   impl Game {
-    pub fn is_preseason(self) -> bool {
-      self.game_type == 1
+    pub fn get_type(self) -> GameType {
+      use crate::json::GameType::*;
+
+      match self.game_type {
+        1 => Preseason,
+        2 => RegularSeason,
+        3 => Playoffs,
+        _ => panic!("unknown gameType: {}", self.game_type),
+      }
     }
 
     // TODO Consolidate with db::db_to_crate.
@@ -214,7 +218,7 @@ mod json {
 
   #[derive(Clone, Debug, Deserialize)]
   pub struct ApiResponse {
-    // Key is team.api_id.
+    // Key is `team.api_id`.
     pub schedules: std::collections::HashMap<i32, TeamSchedule>,
   }
 
@@ -253,8 +257,12 @@ impl DB {
     let mut statement = self
       .conn
       .prepare(&format!("SELECT * FROM {};", table_name))
-      .unwrap_or_else(|_| panic!("error from DB::all for table {table_name}"));
-    let res = serde_rusqlite::from_rows::<T>(statement.query([]).unwrap());
+      .unwrap();
+    let res = serde_rusqlite::from_rows::<T>(
+      statement
+        .query([])
+        .unwrap_or_else(|e| panic!("error from DB::all for table {table_name}: {:?}", e)),
+    );
     res.flatten().collect()
   }
 
@@ -270,17 +278,35 @@ impl DB {
     self.all::<db::LastPeriodType>("last_period_types")
   }
 
+  fn period_type_ids(&self) -> HashMap<json::PeriodType, i32> {
+    fn get_period_type_id(db: &DB, name: &str) -> i32 {
+      db.conn
+        .query_row(
+          "SELECT id FROM last_period_types WHERE name = ?1",
+          [name],
+          |r| r.get(0),
+        )
+        .unwrap()
+    }
+    let mut period_type_ids: HashMap<json::PeriodType, i32> = HashMap::new();
+    period_type_ids.insert(
+      json::PeriodType::REG,
+      get_period_type_id(self, "Regulation"),
+    );
+    period_type_ids.insert(json::PeriodType::SO, get_period_type_id(self, "Shootout"));
+    period_type_ids.insert(json::PeriodType::OT, get_period_type_id(self, "Overtime"));
+    period_type_ids
+  }
+
   fn all_teams(&self) -> Vec<db::Team> {
     self.all::<db::Team>("teams")
   }
 
-  fn all_games(&self, teams: &[Team]) -> GamesByTeam {
-    let mut games: GamesByTeam = HashMap::new();
-    let scores = self.all_scores();
-    let last_period_types = self.all_last_period_types();
+  fn all_db_games(&self, teams: &[Team]) -> DbGamesByTeam {
+    let mut games: DbGamesByTeam = HashMap::new();
 
     for team in teams {
-      let mut team_games = vec![];
+      let mut db_games = vec![];
       let mut statement = self
         .conn
         .prepare("SELECT * FROM games WHERE games.home_team_id = ?1 OR games.away_team_id = ?2;")
@@ -290,35 +316,175 @@ impl DB {
           .query([team.db_id, team.db_id])
           .unwrap_or_else(|e| panic!("error while SELECTing games: {:?}", e)),
       );
-      fn find_score(
-        score_id: i32,
-        scores: &[db::Score],
-        last_period_types: &[db::LastPeriodType],
-      ) -> Option<(db::Score, db::LastPeriodType)> {
-        if let Some(score) = scores.iter().find(|score| score.id == score_id) {
-          let lpt: db::LastPeriodType = last_period_types
-            .iter()
-            .find(|period_type| period_type.id == score.last_period_type_id)
-            .unwrap()
-            .clone();
-          Some((*score, lpt))
-        } else {
-          None
-        }
-      }
       for db_game in res.flatten() {
+        db_games.push(db_game)
+      }
+
+      games.insert(team.api_id, db_games);
+    }
+    games
+  }
+
+  fn all_games(&self, teams: &[Team]) -> GamesByTeam {
+    let games_by_team: DbGamesByTeam = self.all_db_games(teams);
+    let scores = self.all_scores();
+    let last_period_types = self.all_last_period_types();
+    fn find_score(
+      score_id: i32,
+      scores: &[db::Score],
+      last_period_types: &[db::LastPeriodType],
+    ) -> Option<(db::Score, db::LastPeriodType)> {
+      if let Some(score) = scores.iter().find(|score| score.id == score_id) {
+        let lpt: db::LastPeriodType = last_period_types
+          .iter()
+          .find(|period_type| period_type.id == score.last_period_type_id)
+          .unwrap()
+          .clone();
+        Some((*score, lpt))
+      } else {
+        None
+      }
+    }
+    let mut all_games = HashMap::new();
+    for team in teams {
+      let team_db_games = games_by_team.get(&team.api_id).unwrap();
+      let mut team_games = vec![];
+      for db_game in team_db_games {
         let game_outcome = if let Some(score_id) = db_game.score_id {
           find_score(score_id, &scores, &last_period_types)
         } else {
           None
         };
-        let team_game: Game = db_game.db_to_crate(game_outcome, team);
+        let team_game: Game = db_game.clone().db_to_crate(game_outcome, team);
         team_games.push(team_game)
       }
-
-      games.insert(team.api_id, team_games);
+      all_games.insert(team.api_id, team_games);
     }
-    games
+    all_games
+  }
+
+  fn insert_schedules(
+    &self,
+    schedules: HashMap<i32, json::TeamSchedule>,
+    teams: &[Team],
+  ) -> Result<u32, &str> {
+    let mut insert_game_statement = self
+      .conn
+      .prepare("INSERT INTO games (api_id, home_team_id, away_team_id, score_id) VALUES (:api_id, :home_team_id, :away_team_id, :score_id);")
+      .unwrap();
+    let mut update_game_statement = self
+      .conn
+      .prepare("UPDATE games SET score_id = :score_id WHERE api_id = :api_id;")
+      .unwrap();
+    let mut score_statement = self
+      .conn
+      .prepare("INSERT INTO scores (home, away, last_period_type_id) VALUES (:home, :away, :last_period_type_id);")
+      .unwrap();
+
+    let period_type_ids: HashMap<json::PeriodType, i32> = self.period_type_ids();
+
+    let all_db_games = self.all_db_games(teams);
+
+    let mut finished_game_ids: HashSet<i32> = HashSet::new();
+    let api_ids: Vec<u8> = self
+      .conn
+      .query_row(
+        "SELECT api_id FROM games WHERE games.score_id IS NOT NULL",
+        [],
+        |r| r.get(0),
+      )
+      .unwrap();
+
+    for api_id in api_ids {
+      finished_game_ids.insert(api_id as i32);
+    }
+
+    use crate::json::GameType::*;
+    for (_team_api_id, schedule) in schedules {
+      for json_game in schedule.games {
+        let mut score_id = None;
+        if let Some(outcome) = json_game.game_outcome {
+          match json_game.get_type() {
+            Preseason | Playoffs => (),
+            RegularSeason => {
+              if finished_game_ids.get(&json_game.id).is_none() {
+                finished_game_ids.insert(json_game.id);
+                fn get_score(team: json::GameTeam, team_str: &str) -> i32 {
+                  team.score.unwrap_or_else(|| {
+                    panic!("json_game with an outcome should have a score for the {team_str} team")
+                  })
+                }
+                score_id = Some(
+                  score_statement
+                    .insert(rusqlite::named_params! {
+                      ":home": get_score(json_game.home_team, "home"),
+                      ":away": get_score(json_game.away_team, "away"),
+                      ":last_period_type_id": *period_type_ids.get(&outcome.last_period_type).unwrap(),
+                    })
+                    .unwrap(),
+                );
+              }
+            }
+          }
+        } else {
+          println!("got no gameOutcome for {}", json_game.id);
+        }
+        fn get_db_id(game_team: json::GameTeam, teams: &[Team]) -> i32 {
+          teams
+            .iter()
+            .find(|team| team.api_id == game_team.id)
+            .unwrap()
+            .db_id
+        }
+        match json_game.get_type() {
+          Preseason | Playoffs => (),
+          RegularSeason => {
+            if let Some(home_team_db_games) = all_db_games.get(&json_game.home_team.id) {
+              if let Some(db_game) = home_team_db_games
+                .iter()
+                .find(|db_game| db_game.api_id == json_game.id)
+              {
+                if score_id.is_some() && db_game.score_id.is_none() {
+                  match update_game_statement
+                    .execute(rusqlite::named_params! {":score_id": score_id})
+                  {
+                    Ok(_) => (),
+                    Err(e) => {
+                      println!(
+                        "error on insert_game_statement.execute: {:?}\n with params:\n{}, {}, {}, {:?}",
+                        e, json_game.id, json_game.home_team.id, json_game.away_team.id, score_id,
+                      )
+                    }
+                  }
+                }
+              } else {
+                match insert_game_statement.execute(rusqlite::named_params! {
+                  ":api_id": json_game.id,
+                  ":home_team_id": get_db_id(json_game.home_team, teams),
+                  ":away_team_id": get_db_id(json_game.away_team, teams),
+                  ":score_id": score_id,
+                }) {
+                  Ok(_) => (),
+                  Err(e) => {
+                    println!(
+                      "error on insert_game_statement.execute: {:?}\n with params:\n{}, {}, {}, {:?}",
+                      e, json_game.id, json_game.home_team.id, json_game.away_team.id, score_id,
+                    )
+                  }
+                }
+              }
+            } else {
+              panic!(
+                "could not find team with api_id {} in all_games",
+                json_game.home_team.id
+              )
+            }
+          }
+        }
+      }
+    }
+
+    todo!()
   }
 
   fn execute_file(&self, path: &str) {
@@ -363,6 +529,7 @@ struct ShowDivision {
 
 // Key is the Team's api_id.
 type GamesByTeam = HashMap<i32, Vec<Game>>;
+type DbGamesByTeam = HashMap<i32, Vec<db::Game>>;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 enum Division {
@@ -442,8 +609,10 @@ impl eframe::App for App {
         let mut team_games = vec![];
 
         for game in &schedule.games {
-          if !game.is_preseason() {
-            team_games.push(game.api_to_crate(team));
+          use crate::json::GameType::*;
+          match game.get_type() {
+            Preseason | Playoffs => (),
+            RegularSeason => team_games.push(game.api_to_crate(team)),
           }
         }
         games.insert(team.api_id, team_games);
@@ -458,89 +627,22 @@ impl eframe::App for App {
     if let Ok(api_response) = self.rx.try_recv() {
       let new_data = make_app_data(&api_response, &self.data.teams);
       self.data = new_data.clone();
-      let mut game_statement = self
+      self
         .db
-        .conn
-        .prepare("INSERT INTO games (api_id, home_team_id, away_team_id, score_id) VALUES (:api_id, :home_team_id, :away_team_id, :score_id);")
+        .insert_schedules(api_response.schedules, &self.data.teams)
         .unwrap();
-      let mut score_statement = self
-        .db
-        .conn
-        .prepare("INSERT INTO scores (home, away, last_period_type_id) VALUES (:home, :away, :last_period_type_id);")
-        .unwrap();
-      fn get_period_type_id(db: &DB, name: &str) -> i32 {
-        db.conn
-          .query_row(
-            "SELECT id FROM last_period_types WHERE name = ?1",
-            [name],
-            |r| r.get(0),
-          )
-          .unwrap()
-      }
-      let mut period_type_ids: HashMap<json::PeriodType, i32> = HashMap::new();
-      period_type_ids.insert(
-        json::PeriodType::REG,
-        get_period_type_id(&self.db, "Regulation"),
-      );
-      period_type_ids.insert(
-        json::PeriodType::SO,
-        get_period_type_id(&self.db, "Shootout"),
-      );
-      period_type_ids.insert(
-        json::PeriodType::OT,
-        get_period_type_id(&self.db, "Overtime"),
-      );
-      let mut game_ids: HashSet<i32> = HashSet::new();
-      for (_team_api_id, schedule) in api_response.schedules {
-        for json_game in schedule.games {
-          let mut score_id = None;
-          if let Some(outcome) = json_game.game_outcome {
-            if !json_game.is_preseason() && game_ids.get(&json_game.id).is_none() {
-              game_ids.insert(json_game.id);
-              fn get_score(team: json::GameTeam, team_str: &str) -> i32 {
-                team.score.unwrap_or_else(|| {
-                  panic!("json_game with an outcome should have a score for the {team_str} team")
-                })
-              }
-              score_id = Some(
-                score_statement
-                  .insert(rusqlite::named_params! {
-                    ":home": get_score(json_game.home_team, "home"),
-                    ":away": get_score(json_game.away_team, "away"),
-                    ":last_period_type_id": *period_type_ids.get(&outcome.last_period_type).unwrap(),
-                  })
-                  .unwrap(),
-              );
-            }
-          } else {
-            println!("got no gameOutcome for {}", json_game.id);
-          }
-          fn get_db_id(game_team: json::GameTeam, teams: &[Team]) -> i32 {
-            teams
-              .iter()
-              .find(|team| team.api_id == game_team.id)
-              .unwrap()
-              .db_id
-          }
-          if !json_game.is_preseason() {
-            match game_statement.execute(rusqlite::named_params! {
-              ":api_id": json_game.id,
-              ":home_team_id": get_db_id(json_game.home_team, &self.data.teams),
-              ":away_team_id": get_db_id(json_game.away_team, &self.data.teams),
-              ":score_id": score_id,
-            }) {
-              Ok(_) => (),
-              Err(e) => {
-                println!(
-                  "error on game_statement.execute: {:?}\n with params:\n{}, {}, {}, {:?}",
-                  e, json_game.id, json_game.home_team.id, json_game.away_team.id, score_id,
-                )
-              }
-            }
-          }
-        }
-      }
     }
+
+    egui::TopBottomPanel::top("header/tabs").show(ctx, |ui| {
+      ui.horizontal(|hui| {
+        if hui.button(_txt("regular season")).clicked() {
+          println!("reg")
+        }
+        if hui.button(_txt("playoffs")).clicked() {
+          println!("playoffs")
+        }
+      });
+    });
 
     egui::SidePanel::left("options").show(ctx, |ui| {
       ui.collapsing("Divisions", |cui| {
@@ -560,7 +662,7 @@ impl eframe::App for App {
             Ok(api_response) => {
               let _ = tx.send(api_response);
               ctx_.request_repaint();
-            },
+            }
             Err(e) => println!("error from NHL api: {:?}", e),
           }
         });
